@@ -1,5 +1,9 @@
--- Staging: Cleaned transactions (Silver layer)
-{{ config(materialized='view') }}
+-- Staging: Cleaned transactions (Silver layer) - Incremental
+{{ config(
+    materialized='incremental',
+    unique_key='txn_id',
+    incremental_strategy='append'
+) }}
 
 WITH source AS (
     SELECT * FROM {{ source('bronze', 'raw_transactions') }}
@@ -23,4 +27,7 @@ SELECT
     CASE WHEN status = 'flagged' OR device_ip IS NULL THEN true ELSE false END AS potential_fraud_flag
 FROM source
 WHERE status NOT IN ('failed')
-  AND txn_date >= CURRENT_DATE - INTERVAL '90 days';
+
+{% if is_incremental() %}
+  AND txn_date > (SELECT MAX(txn_date) FROM {{ this }})
+{% endif %};

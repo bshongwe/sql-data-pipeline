@@ -1,5 +1,10 @@
 -- Gold: Customer Dimension with KYC, RFM, and Risk Profile
-{{ config(materialized='table') }}
+-- Added Incremental Merge
+{{ config(
+    materialized='incremental',
+    unique_key='customer_id',
+    incremental_strategy='merge'
+) }}
 
 WITH txns AS (
     SELECT * FROM {{ ref('stg_transactions') }}
@@ -40,3 +45,8 @@ SELECT
     END AS risk_profile,
     NOW() AS last_updated
 FROM customers;
+
+{% if is_incremental() %}
+WHERE customer_id NOT IN (SELECT customer_id FROM {{ this }})
+   OR last_updated > (SELECT MAX(last_updated) FROM {{ this }})
+{% endif %}

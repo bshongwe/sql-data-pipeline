@@ -9,3 +9,4 @@ fintech_pipeline:
       port: 5432
       dbname: pipeline_db
       schema: public
+      threads: 4

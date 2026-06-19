@@ -1,0 +1,18 @@
+name: 'fintech_pipeline_dbt'
+version: '1.0.0'
+config-version: 2
+
+profile: 'fintech_pipeline'
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+
+models:
+  fintech_pipeline_dbt:
+    staging: { +materialized: view }
+    intermediate: { +materialized: table }
+    marts: 
+      +materialized: table
+      +schema: analytics

@@ -9,10 +9,15 @@ seed-paths: ["seeds"]
 test-paths: ["tests"]
 macro-paths: ["macros"]
 
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
 models:
-  fintech_pipeline_dbt:
-    staging: { +materialized: view }
-    intermediate: { +materialized: table }
-    marts: 
+  sql_pipeline_dbt:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: table
+    marts:
       +materialized: table
       +schema: analytics

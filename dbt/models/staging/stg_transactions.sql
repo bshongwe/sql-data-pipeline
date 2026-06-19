@@ -1,3 +1,4 @@
+-- Staging: Cleaned transactions (Silver layer)
 {{ config(materialized='view') }}
 
 WITH source AS (
@@ -17,6 +18,7 @@ SELECT
     device_ip,
     user_agent,
     loaded_at,
+    -- Basic fraud enrichment
     CASE WHEN amount > 10000 THEN true ELSE false END AS high_value_flag,
     CASE WHEN status = 'flagged' OR device_ip IS NULL THEN true ELSE false END AS potential_fraud_flag
 FROM source

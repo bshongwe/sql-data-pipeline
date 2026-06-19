@@ -26,11 +26,14 @@ def run_command(cmd, cwd=None):
 def main():
     logger.info("=== Starting Fintech Data Pipeline ===")
     
-    project_root = os.path.dirname(os.path.abspath(__file__))
+    # project_root = os.path.dirname(os.path.abspath(__file__))
+    project_root = "/opt/airflow/project"
     
     # 1. Ingestion
     logger.info("Step 1: Data Ingestion to Bronze")
-    run_command(f"python3 scripts/ingest_transactions.py 50", cwd=project_root)
+    # run_command(f"python3 scripts/ingest_transactions.py 50", cwd=project_root)
+    # Ingestion (for Docker Container only)
+    run_command(f"python3 /opt/airflow/project/scripts/ingest_transactions.py 50", cwd=project_root)
     
     # 2. dbt Transformations (Incremental)
     logger.info("Step 2: dbt Run & Test")

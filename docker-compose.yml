@@ -23,21 +23,37 @@ services:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@postgres:5432/airflow
       - AIRFLOW__CORE__LOAD_EXAMPLES=false
-    depends_on: { postgres: { condition: service_healthy } }
+    depends_on:
+      postgres:
+        condition: service_healthy
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./dbt:/opt/airflow/dbt
       - ./airflow/logs:/opt/airflow/logs
-    ports: ["8080:8080"]
+    ports:
+      - "8080:8080"
     command: webserver
 
   airflow-scheduler:
     image: apache/airflow:2.10.0
-    environment: [...]  # same as above
-    depends_on: { postgres: { condition: service_healthy } }
-    volumes: [...] 
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@postgres:5432/airflow
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-webserver:
+        condition: service_started
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./dbt:/opt/airflow/dbt
 
-  airflow-init: ...  # creates admin user
+  airflow-init:
+    image: apache/airflow:2.10.0
+    command: ["bash", "-c", "airflow db init && airflow users create -r Admin -u admin -e admin@example.com -p admin --firstname Admin --lastname User"]
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres_data:

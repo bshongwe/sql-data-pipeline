@@ -29,6 +29,7 @@ services:
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./dbt:/opt/airflow/dbt
+      - .:/opt/airflow/project
       - ./airflow/logs:/opt/airflow/logs
     ports:
       - "8080:8080"
@@ -47,7 +48,7 @@ services:
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./dbt:/opt/airflow/dbt
-
+      - .:/opt/airflow/project
   airflow-init:
     image: apache/airflow:2.10.0
     command: ["bash", "-c", "airflow db init && airflow users create -r Admin -u admin -e admin@example.com -p admin --firstname Admin --lastname User"]

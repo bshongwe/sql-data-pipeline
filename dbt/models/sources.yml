@@ -1,0 +1,21 @@
+version: 2
+
+sources:
+  - name: bronze
+    database: pipeline_db
+    schema: bronze
+    tables:
+      - name: raw_transactions
+        description: Raw transaction data from payment systems.
+        columns:
+          - name: txn_id
+            tests:
+              - unique
+              - not_null
+          - name: amount
+            tests:
+              - not_null
+      - name: raw_accounts
+        description: Raw account master data.
+      - name: raw_customers
+        description: Raw customer KYC and profile data.

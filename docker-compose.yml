@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16
@@ -17,8 +15,11 @@ services:
       timeout: 5s
       retries: 5
 
-  airflow-webserver:
-    image: apache/airflow:2.10.0
+  airflow-init:
+    build:
+      context: ./airflow
+      dockerfile: Dockerfile
+    command: ["bash", "-c", "airflow db init && airflow users create -r Admin -u admin -e admin@example.com -p admin --firstname Admin --lastname User"]
     environment:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@postgres:5432/airflow
@@ -26,6 +27,20 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
+  airflow-webserver:
+    build:
+      context: ./airflow
+      dockerfile: Dockerfile
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@postgres:5432/airflow
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./dbt:/opt/airflow/dbt
@@ -36,7 +51,9 @@ services:
     command: webserver
 
   airflow-scheduler:
-    image: apache/airflow:2.10.0
+    build:
+      context: ./airflow
+      dockerfile: Dockerfile
     environment:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@postgres:5432/airflow
@@ -45,16 +62,13 @@ services:
         condition: service_healthy
       airflow-webserver:
         condition: service_started
+      airflow-init:
+        condition: service_completed_successfully
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./dbt:/opt/airflow/dbt
       - .:/opt/airflow/project
-  airflow-init:
-    image: apache/airflow:2.10.0
-    command: ["bash", "-c", "airflow db init && airflow users create -r Admin -u admin -e admin@example.com -p admin --firstname Admin --lastname User"]
-    depends_on:
-      postgres:
-        condition: service_healthy
+    command: scheduler
 
 volumes:
   postgres_data:

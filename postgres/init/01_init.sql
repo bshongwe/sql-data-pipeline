@@ -1,3 +1,6 @@
+-- Create airflow database
+CREATE DATABASE airflow;
+
 -- Create schemas for medallion architecture
 CREATE SCHEMA IF NOT EXISTS bronze;
 CREATE SCHEMA IF NOT EXISTS silver;
